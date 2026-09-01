@@ -1,0 +1,21 @@
+# ambiente virtual Python
+.venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# variáveis e arquivos sensíveis
+.env
+.env.*
+
+# arquivos temporários do Excel
+~$*.xlsx
+~$*.xls
+
+# arquivos locais do VS Code
+.vscode/
+
+# sistema operacional
+Thumbs.db
+.DS_Store
