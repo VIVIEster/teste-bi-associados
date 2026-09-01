@@ -9,8 +9,6 @@ para posterior consolidação e criação dos indicadores.
 from pathlib import Path
 import pandas as pd
 
-
-
 # 1. configuração
 RAIZ_PROJETO = Path(__file__).resolve().parent.parent
 CAMINHO_BASE = RAIZ_PROJETO / "data" / "raw" / "teste_bi_base_crua.xlsx"
@@ -21,7 +19,6 @@ if not CAMINHO_BASE.exists():
     raise FileNotFoundError(
         f"Base de dados não encontrada: {CAMINHO_BASE}"
     )
-
 
 # 2. leitura das bases
 associados = pd.read_excel(
@@ -39,7 +36,7 @@ movimentacao = pd.read_excel(
     sheet_name="Movimentacao",
 )
 
-# Preservar os DataFrames carregados como referência do dado bruto.
+# preservar os DataFrames carregados como referência do dado bruto.
 associados_tratados = associados.copy()
 produtos_tratados = produtos.copy()
 movimentacao_tratada = movimentacao.copy()
@@ -577,4 +574,42 @@ print(
     base_consolidada["SEGMENTO_RELACIONAMENTO"]
     .value_counts()
 )
+
+
+# 8. oportunidades
+q3_renda = base_consolidada["RENDA_MENSAL"].quantile(0.75)
+
+base_consolidada["OPORT_CROSS_SELL"] = (
+    base_consolidada["RENDA_MENSAL"].ge(q3_renda)
+    & base_consolidada["QTD_PRODUTOS"].le(2)
+)
+
+q1_utilizacao = base_consolidada["SCORE_UTILIZACAO"].quantile(0.25)
+
+base_consolidada["OPORT_BAIXA_UTILIZACAO"] = (
+    base_consolidada["SCORE_UTILIZACAO"] < q1_utilizacao
+)
+
+q3_tempo = base_consolidada[
+    "TEMPO_RELACIONAMENTO_ANOS"
+].quantile(0.75)
+
+base_consolidada["OPORT_RELACIONAMENTO_SUBAPROVEITADO"] = (
+    base_consolidada["TEMPO_RELACIONAMENTO_ANOS"].ge(q3_tempo)
+    & base_consolidada["QTD_PRODUTOS"].le(2)
+)
+
+colunas_oportunidades = [
+    "OPORT_CROSS_SELL",
+    "OPORT_BAIXA_UTILIZACAO",
+    "OPORT_RELACIONAMENTO_SUBAPROVEITADO",
+]
+
+print("\nOportunidades identificadas:")
+
+for coluna in colunas_oportunidades:
+    print(
+        f"{coluna}: "
+        f"{base_consolidada[coluna].sum()}"
+    )
 
