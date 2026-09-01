@@ -29,7 +29,7 @@ O diagnóstico servirá como base para a etapa de tratamento em Python, definiç
 
 #### Granularidade
 
-Aparentemente, cada linha representa um associado e seus respectivos dados cadastrais e de relacionamento.
+Cada linha representa um associado e seus respectivos dados cadastrais e de relacionamento.
 
 #### Campos disponíveis
 
@@ -42,11 +42,14 @@ Aparentemente, cada linha representa um associado e seus respectivos dados cadas
 
 #### Qualidade identificada
 
-- A coluna `CHAVE` não apresentou duplicidades na inspeção inicial.
-- Foram observados valores ausentes em `RENDA_MENSAL`.
-- Foram observadas diferenças de padronização no campo `CIDADE`.
-- A apresentação/formatação de alguns campos precisa ser revisada.
-- Existem registros de `DATA_ASSOCIACAO` que precisam ser validados quanto à consistência temporal.
+- A coluna `CHAVE` é única nos 1.000 registros.
+- Não foram identificadas linhas completamente duplicadas.
+- Foram identificados 12 valores nulos em `RENDA_MENSAL`, restando 988 rendas válidas.
+- Foram identificadas inconsistências de padronização no campo `CIDADE`.
+- O campo `AGENCIA` foi interpretado pelo pandas como `int64`, embora represente uma categoria/código de identificação e não uma medida numérica.
+- `DATA_ASSOCIACAO` foi corretamente interpretada como data.
+- Foram identificados 37 registros cuja `DATA_ASSOCIACAO` é posterior à data de referência do diagnóstico, 01/09/2026.
+- As datas futuras identificadas estão compreendidas entre 17/09/2026 e 26/12/2026.
 
 #### Potencial analítico
 
@@ -62,10 +65,11 @@ Considerando apenas esta base, ela parece permitir análises relacionadas a:
 
 #### Dúvidas e hipóteses
 
-- Como tratar os associados sem renda mensal informada?
-- As diferentes grafias encontradas em `CIDADE` representam as mesmas localidades?
-- Existem datas de associação inconsistentes ou futuras?
-- A ausência de renda representa dado não informado, valor desconhecido ou alguma outra situação?
+- Investigar se os 12 registros sem `RENDA_MENSAL` apresentam algum padrão relacionado a agência, cidade, tempo de relacionamento ou demais características.
+- Definir posteriormente a regra mais adequada para os valores ausentes de renda, evitando imputação sem justificativa.
+- Padronizar as diferentes representações de uma mesma cidade somente após definir uma nomenclatura canônica.
+- Avaliar o tratamento adequado para as 37 datas de associação futuras, pois elas resultariam em tempo de relacionamento negativo.
+- Avaliar a conversão de `AGENCIA` para um tipo categórico/textual durante o tratamento, preservando seu significado de código identificador.
 
 ---
 
@@ -73,19 +77,26 @@ Considerando apenas esta base, ela parece permitir análises relacionadas a:
 
 #### Granularidade
 
-Aparentemente, cada linha representa o portfólio de produtos de um associado.
+Cada linha representa o portfólio de produtos de um associado.
 
 #### Campos disponíveis
 
 - `CHAVE`: identificador do associado.
-- Demais colunas: indicadores dos produtos disponibilizados na base, informando se o associado possui ou não cada produto.
+- `CONTA_CORRENTE`: indica se o associado possui conta corrente.
+- `CARTAO`: indica se o associado possui cartão.
+- `CREDITO`: indica se o associado possui produto de crédito.
+- `INVESTIMENTO`: indica se o associado possui investimento.
+- `CONSORCIO`: indica se o associado possui consórcio.
+- `SEGURO`: indica se o associado possui seguro.
 
 #### Qualidade identificada
 
-- A coluna `CHAVE` não apresentou duplicidades na inspeção inicial.
-- Não foram percebidos valores nulos na inspeção manual.
-- Os campos de produtos parecem utilizar categorias binárias, que ainda deverão ser verificadas programaticamente.
-- Foram observados associados para os quais todos os produtos disponíveis na base aparecem como não ativos.
+- A coluna `CHAVE` é única nos 1.000 registros.
+- Não foram identificadas linhas completamente duplicadas.
+- Não foram identificados valores nulos.
+- Todas as seis colunas de produtos apresentam exclusivamente as categorias `S` e `N`.
+- Não foram identificadas inconsistências de padronização nas categorias dos produtos.
+- Foram identificados 13 associados com todos os seis produtos marcados como `N`.
 
 #### Potencial analítico
 
@@ -100,10 +111,9 @@ Considerando apenas esta base, ela parece permitir análises relacionadas a:
 
 #### Dúvidas e hipóteses
 
-- Os valores dos campos de produto seguem exclusivamente um padrão binário?
-- Os associados com todos os produtos marcados como não ativos representam uma situação válida de negócio?
-- Os produtos representados nesta tabela correspondem a todo o portfólio disponível ou apenas a um subconjunto?
-- Existem padrões de associação entre determinados produtos?
+- Os 13 associados sem nenhum dos seis produtos ativos serão inicialmente considerados registros válidos, mas seu perfil deverá ser analisado após a consolidação das bases.
+- Esses associados podem representar um grupo relevante para a análise de oportunidades, caso os demais indicadores sustentem essa interpretação.
+- Não é possível afirmar, apenas com esta base, que os seis produtos representam todo o portfólio disponível pela instituição.
 
 ---
 
@@ -111,7 +121,7 @@ Considerando apenas esta base, ela parece permitir análises relacionadas a:
 
 #### Granularidade
 
-Aparentemente, cada linha representa um resumo de indicadores de movimentação financeira de um associado.
+Cada linha representa um resumo de indicadores de movimentação financeira de um associado.
 
 Não foram identificadas múltiplas linhas por `CHAVE` na inspeção inicial, portanto a tabela não aparenta possuir granularidade transacional.
 
@@ -124,10 +134,12 @@ Não foram identificadas múltiplas linhas por `CHAVE` na inspeção inicial, po
 
 #### Qualidade identificada
 
-- A coluna `CHAVE` não apresentou duplicidades na inspeção inicial.
-- Não foram percebidos valores nulos durante a inspeção manual.
-- Não existe, aparentemente, uma coluna de competência ou período de referência da movimentação.
-- Os tipos, intervalos e possíveis valores extremos dos indicadores ainda precisam ser verificados programaticamente.
+- A coluna `CHAVE` é única nos 1.000 registros.
+- Não foram identificadas linhas completamente duplicadas.
+- Não foram identificados valores nulos.
+- `SALDO_MEDIO`, `PIX_MENSAL` e `COMPRAS_CARTAO` foram interpretados como campos numéricos inteiros.
+- Não existe coluna explícita de competência ou período de referência da movimentação.
+- A análise inicial das distribuições numéricas não apresentou, apenas pelos valores mínimo e máximo, evidência suficiente para classificar registros como inválidos. A investigação de possíveis valores extremos será complementada por análise estatística.
 
 #### Potencial analítico
 
@@ -141,10 +153,11 @@ Considerando apenas esta base, ela parece permitir análises relacionadas a:
 
 #### Dúvidas e hipóteses
 
-- Qual é o período de referência dos indicadores de movimentação?
-- `PIX_MENSAL` representa quantidade de transações, valor financeiro ou outro indicador?
-- `COMPRAS_CARTAO` representa quantidade ou valor financeiro?
-- Existem valores extremos que possam distorcer médias ou critérios de classificação?
+- O período de referência dos indicadores de movimentação não está explicitamente informado na base.
+- O nome `PIX_MENSAL` sugere uma medida mensal, mas a base não informa a competência correspondente.
+- A unidade de `PIX_MENSAL` deve ser interpretada com cautela, pois o campo pode representar quantidade de transações e não valor financeiro.
+- A unidade de `COMPRAS_CARTAO` também deverá ser considerada na interpretação analítica.
+- As distribuições de `SALDO_MEDIO`, `PIX_MENSAL` e `COMPRAS_CARTAO` deverão ser consideradas antes da definição de critérios de baixa, média ou alta movimentação.
 
 ---
 
@@ -156,25 +169,35 @@ A coluna `CHAVE` está presente nas três bases e aparenta representar o mesmo a
 
 ### 4.2 Cardinalidade observada
 
-Na inspeção inicial, cada base apresentou apenas um registro por `CHAVE`.
+As três bases apresentam `CHAVE` única, sem duplicidades.
 
-Isso sugere relacionamentos de cardinalidade `1:1` entre as tabelas, mas essa conclusão deverá ser confirmada programaticamente.
+Foi confirmada programaticamente uma correspondência de um registro por associado em cada uma das três tabelas. Portanto, para a base recebida, os relacionamentos observados são de cardinalidade `1:1`.
 
 ### 4.3 Cobertura das chaves
 
-Ainda deverá ser validado em Python se todas as chaves presentes em uma base também existem nas demais.
+A comparação programática dos conjuntos de `CHAVE` confirmou cobertura integral entre as três bases.
 
-Validações previstas:
+Resultados:
 
-- Associados × Produtos;
-- Associados × Movimentação;
-- Produtos × Movimentação.
+- Associados × Produtos: conjuntos de chaves idênticos.
+- Associados × Movimentação: conjuntos de chaves idênticos.
+- Produtos × Movimentação: conjuntos de chaves idênticos.
+- Associados sem Produtos: 0.
+- Produtos sem Associados: 0.
+- Associados sem Movimentação: 0.
+- Movimentação sem Associados: 0.
+
+Portanto, não foram identificados registros órfãos entre as bases.
 
 ### 4.4 Estrutura esperada após consolidação
 
-A consolidação deverá preservar a granularidade de um registro por associado, reunindo em uma única visão os dados cadastrais, produtos e indicadores de movimentação correspondentes à mesma `CHAVE`.
+Como as três bases possuem 1.000 registros, `CHAVE` única e cobertura integral entre as populações, espera-se que a consolidação mantenha a granularidade de:
 
-A quantidade final de registros deverá ser reconciliada com a população original das bases.
+**1 linha = 1 associado**
+
+A base consolidada deverá, portanto, possuir 1.000 registros caso o relacionamento seja realizado corretamente.
+
+Essa quantidade será utilizada como controle de reconciliação após os merges.
 
 ---
 
@@ -182,32 +205,72 @@ A quantidade final de registros deverá ser reconciliada com a população origi
 
 ### 5.1 Valores ausentes
 
-| Base | Campo | Observação |
-|---|---|---|
-| Associados | `RENDA_MENSAL` | Existem registros sem renda informada. |
+| Base | Campo | Quantidade | Observação |
+|---|---|---:|---|
+| Associados | `RENDA_MENSAL` | 12 | Valores de renda não informados. |
+| Produtos | — | 0 | Nenhum valor nulo identificado. |
+| Movimentação | — | 0 | Nenhum valor nulo identificado. |
 
 ### 5.2 Padronização
 
 | Base | Campo | Observação |
 |---|---|---|
-| Associados | `CIDADE` | Foram observadas grafias/formatações sem padrão consistente. |
+| Associados | `CIDADE` | Foram identificadas diferentes representações para localidades aparentemente equivalentes, incluindo variações de abreviação e caixa. |
 
-### 5.3 Integridade
+### 5.3 Tipos de dados
 
-- Não foram identificadas duplicidades de `CHAVE` durante a inspeção manual.
-- A correspondência completa das chaves entre as três bases ainda precisa ser validada programaticamente.
-- A existência de duplicidades completas de linha também deverá ser testada em Python.
+- `AGENCIA` foi interpretada como `int64`, embora semanticamente represente um código categórico.
+- `DATA_ASSOCIACAO` foi corretamente interpretada como `datetime`.
+- `RENDA_MENSAL` foi interpretada como `float64`, o que é compatível com a presença de valores ausentes.
+- Os indicadores de movimentação foram interpretados como numéricos inteiros.
 
-### 5.4 Consistência lógica
+### 5.4 Integridade
 
-- `DATA_ASSOCIACAO` deverá ser validada para identificar datas impossíveis ou posteriores à data de referência da análise.
-- Associados sem nenhum produto ativo entre os produtos disponíveis na base deverão ser investigados antes de serem tratados como erro.
+- Não foram identificadas linhas completamente duplicadas.
+- Não foram identificadas `CHAVE`s duplicadas.
+- Todas as `CHAVE`s estão presentes nas três bases.
+- Não foram identificados registros órfãos.
+- A cardinalidade observada entre as três bases é `1:1`.
 
-### 5.5 Formatação e tipos
+### 5.5 Consistência lógica
 
-- Campos monetários deverão ser mantidos como valores numéricos durante o tratamento; a formatação em moeda deverá ser aplicada apenas na camada de apresentação quando necessário.
-- Datas deverão ser verificadas quanto ao tipo de dado.
-- Campos categóricos deverão ser avaliados quanto à consistência de grafia, espaços, caixa e demais variações.
+- Foram identificados 37 registros com `DATA_ASSOCIACAO` posterior à data de referência de 01/09/2026.
+- Essas datas variam entre 17/09/2026 e 26/12/2026.
+- Esses registros precisam de uma regra de tratamento antes do cálculo de tempo de relacionamento.
+- Foram identificados 13 associados sem nenhum dos seis produtos ativos. Esse comportamento será mantido como válido até que exista evidência para classificá-lo como inconsistência.
+
+### 5.6 Distribuições numéricas iniciais
+
+#### Renda Mensal
+
+- Registros válidos: 988.
+- Média: R$ 15.790,71.
+- Mediana: R$ 15.235,00.
+- Mínimo: R$ 2.010,00.
+- Máximo: R$ 29.972,00.
+
+#### Saldo Médio
+
+- Média: R$ 123.365,02.
+- Mediana: R$ 122.643,50.
+- Mínimo: R$ 744,00.
+- Máximo: R$ 249.864,00.
+
+#### PIX Mensal
+
+- Média: 50,275.
+- Mediana: 48.
+- Mínimo: 0.
+- Máximo: 100.
+
+#### Compras no Cartão
+
+- Média: R$ 10.040,05.
+- Mediana: R$ 9.826,50.
+- Mínimo: R$ 50,00.
+- Máximo: R$ 19.994,00.
+
+As estatísticas acima representam uma análise exploratória inicial e ainda não definem, isoladamente, limites para classificação de baixa, média ou alta movimentação.
 
 ---
 
@@ -215,15 +278,15 @@ A quantidade final de registros deverá ser reconciliada com a população origi
 
 | ID | Hipótese / dúvida | Como validar | Status |
 |---|---|---|---|
-| H01 | A `CHAVE` é única nas três bases. | Verificar duplicidades programaticamente. | Pendente |
-| H02 | As três bases possuem exatamente o mesmo conjunto de chaves. | Comparar os conjuntos de `CHAVE` entre as tabelas. | Pendente |
-| H03 | As diferentes grafias de `CIDADE` representam localidades que podem ser padronizadas. | Listar valores únicos e frequências. | Pendente |
-| H04 | Existem registros de associação com datas temporalmente inconsistentes. | Comparar `DATA_ASSOCIACAO` com a data de referência. | Pendente |
-| H05 | Os produtos utilizam apenas categorias binárias válidas. | Listar valores únicos de cada campo de produto. | Pendente |
-| H06 | Associados sem produtos ativos representam uma situação válida. | Quantificar os casos e avaliar o contexto dos demais campos. | Pendente |
-| H07 | Os indicadores de movimentação não possuem valores extremos relevantes. | Analisar estatísticas descritivas e distribuição. | Pendente |
-| H08 | Os valores ausentes de renda não apresentam um padrão evidente. | Comparar os registros ausentes com agência, cidade, produtos e movimentação. | Pendente |
-| H09 | A consolidação poderá preservar exatamente um registro por associado. | Realizar merges controlados e reconciliar a quantidade de registros. | Pendente |
+| H01 | A `CHAVE` é única nas três bases. | Verificação programática de duplicidades. | Confirmado |
+| H02 | As três bases possuem exatamente o mesmo conjunto de chaves. | Comparação dos conjuntos de `CHAVE`. | Confirmado |
+| H03 | As diferentes grafias de `CIDADE` representam localidades que podem ser padronizadas. |  Análise dos valores únicos e frequências de `CIDADE`. | Parcialmente confirmado - definir padrão |
+| H04 | Existem registros de associação com datas temporalmente inconsistentes. | Comparação de `DATA_ASSOCIACAO` com a data de referência. | Confirmado - 37 registros |
+| H05 | Os produtos utilizam apenas categorias binárias válidas. | Análise dos valores únicos das seis colunas de produto. | Confirmado - apenas 'S' e 'N' |
+| H06 | Associados sem produtos ativos representam uma situação válida. | Verificação conjunta das seis colunas de produto. | Confirmado - 13 registros |
+| H07 | Os indicadores de movimentação não possuem valores extremos relevantes. | Estatísticas descritivas e método IQR. | Em avaliação |
+| H08 | Os valores ausentes de renda não apresentam um padrão evidente. | Investigar os 12 registros e comparar características. | Em avaliação |
+| H09 | A consolidação poderá preservar exatamente um registro por associado. | Executar merges e reconciliar a quantidade final. | Evidência - validar após o merge |
 
 ---
 
@@ -272,25 +335,39 @@ As perguntas abaixo deverão ser refinadas após a validação e consolidação 
 
 ## 8. Decisões de tratamento
 
-Nenhuma regra definitiva de tratamento foi aplicada nesta etapa.
+O diagnóstico inicial foi concluído, porém as regras de tratamento ainda não foram aplicadas.
 
-Os tratamentos serão definidos após a validação programática dos achados e deverão ser documentados nesta seção.
+Os principais pontos que exigem decisão são:
+
+- padronização de `CIDADE`;
+- tratamento semântico de `AGENCIA`;
+- tratamento dos 12 valores ausentes de `RENDA_MENSAL`;
+- tratamento das 37 datas futuras de `DATA_ASSOCIACAO`;
+- manutenção ou sinalização dos 13 associados sem produtos ativos;
+- definição posterior das regras para indicadores derivados e classificação.
+
+As decisões serão registradas somente após a análise de cada situação e sua respectiva justificativa.
 
 | ID | Decisão | Justificativa | Impacto |
 |---|---|---|---|
-| D01 | A definir | Aguardando diagnóstico programático. | A definir |
+| D01 | A definir | Tratamento de `CIDADE`. | A definir |
+| D02 | A definir | Tipo adequado para `AGENCIA`. | A definir |
+| D03 | A definir | Tratamento da renda ausente. | A definir |
+| D04 | A definir | Tratamento das datas futuras. | A definir |
 
 ---
 
 ## 9. Próximos passos
 
-1. Criar a estrutura inicial do projeto e iniciar o versionamento com Git.
-2. Desenvolver um diagnóstico reproduzível das bases utilizando Python.
-3. Validar programaticamente granularidade, tipos, nulos, duplicidades, chaves, categorias, valores numéricos e datas.
-4. Atualizar este documento com os resultados confirmados pelo diagnóstico.
-5. Definir e documentar as regras de tratamento.
-6. Criar a base consolidada mantendo a granularidade de um registro por associado.
-7. Validar a base tratada antes da construção dos indicadores e da classificação.
+1. Concluir a investigação dos registros com renda ausente.
+2. Validar possíveis valores extremos nos campos numéricos.
+3. Definir e documentar as regras de tratamento dos problemas identificados.
+4. Implementar o processo de limpeza e padronização em Python.
+5. Consolidar as três bases através da `CHAVE`.
+6. Reconciliar a base consolidada com a população original de 1.000 associados.
+7. Criar os indicadores derivados exigidos pelo desafio.
+8. Desenvolver e documentar a metodologia de classificação dos associados.
+9. Preparar a base final para utilização no Power BI.
 
 ---
 
