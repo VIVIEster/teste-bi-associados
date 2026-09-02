@@ -49,7 +49,7 @@ teste-bi-associados/
 │   └── tratamento_final.py
 │
 ├── dashboard/
-│   └── dashboard_associados.pbix
+│   └── Dashboard.pbix
 │
 ├── .gitignore
 ├── README.md
