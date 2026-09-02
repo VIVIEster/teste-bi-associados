@@ -48,7 +48,7 @@ Cada linha representa um associado e seus respectivos dados cadastrais e de rela
 - Foram identificadas inconsistências de padronização no campo `CIDADE`.
 - O campo `AGENCIA` foi interpretado pelo pandas como `int64`, embora represente uma categoria/código de identificação e não uma medida numérica.
 - `DATA_ASSOCIACAO` foi corretamente interpretada como data.
-- Foram identificados 37 registros cuja `DATA_ASSOCIACAO` é posterior à data de referência do diagnóstico, 01/09/2026.
+- Foram identificados 37 registros cuja `DATA_ASSOCIACAO` é posterior à data de referência do projeto, 31/08/2026.
 - As datas futuras identificadas estão compreendidas entre 17/09/2026 e 26/12/2026.
 
 #### Potencial analítico
@@ -56,20 +56,12 @@ Cada linha representa um associado e seus respectivos dados cadastrais e de rela
 Considerando apenas esta base, ela parece permitir análises relacionadas a:
 
 - quantidade de associados;
-- distribuição dos associados por agência;
-- distribuição dos associados por cidade;
-- perfil de renda;
-- faixas de renda;
+- distribuição por agência;
+- distribuição por cidade;
+- perfil e faixas de renda;
 - tempo de relacionamento;
-- evolução dos cadastros/associações ao longo do tempo.
+- evolução das associações ao longo do tempo.
 
-#### Dúvidas e hipóteses
-
-- Investigar se os 12 registros sem `RENDA_MENSAL` apresentam algum padrão relacionado a agência, cidade, tempo de relacionamento ou demais características.
-- Definir posteriormente a regra mais adequada para os valores ausentes de renda, evitando imputação sem justificativa.
-- Padronizar as diferentes representações de uma mesma cidade somente após definir uma nomenclatura canônica.
-- Avaliar o tratamento adequado para as 37 datas de associação futuras, pois elas resultariam em tempo de relacionamento negativo.
-- Avaliar a conversão de `AGENCIA` para um tipo categórico/textual durante o tratamento, preservando seu significado de código identificador.
 
 ---
 
@@ -77,7 +69,7 @@ Considerando apenas esta base, ela parece permitir análises relacionadas a:
 
 #### Granularidade
 
-Cada linha representa o portfólio de produtos de um associado.
+Cada linha representa o portfólio dos seis produtos disponíveis na base para um associado.
 
 #### Campos disponíveis
 
@@ -91,12 +83,11 @@ Cada linha representa o portfólio de produtos de um associado.
 
 #### Qualidade identificada
 
-- A coluna `CHAVE` é única nos 1.000 registros.
+- `CHAVE` é única nos 1.000 registros.
 - Não foram identificadas linhas completamente duplicadas.
-- Não foram identificados valores nulos.
-- Todas as seis colunas de produtos apresentam exclusivamente as categorias `S` e `N`.
-- Não foram identificadas inconsistências de padronização nas categorias dos produtos.
-- Foram identificados 13 associados com todos os seis produtos marcados como `N`.
+- Não foram encontrados valores nulos.
+- As seis colunas de produtos apresentam exclusivamente `S` e `N` na fonte.
+- Foram encontrados 13 associados com todos os seis produtos marcados como `N`.
 
 #### Potencial analítico
 
@@ -109,11 +100,11 @@ Considerando apenas esta base, ela parece permitir análises relacionadas a:
 - diversificação do portfólio;
 - associados sem produtos ativos entre os produtos representados na base.
 
-#### Dúvidas e hipóteses
+#### Interpretação
 
-- Os 13 associados sem nenhum dos seis produtos ativos serão inicialmente considerados registros válidos, mas seu perfil deverá ser analisado após a consolidação das bases.
-- Esses associados podem representar um grupo relevante para a análise de oportunidades, caso os demais indicadores sustentem essa interpretação.
-- Não é possível afirmar, apenas com esta base, que os seis produtos representam todo o portfólio disponível pela instituição.
+Os 13 associados sem produtos ativos foram mantidos como registros válidos, pois não existe evidência de erro e suas demais informações cadastrais e de movimentação permanecem disponíveis.
+
+Na camada final de saída, os valores `S/N` foram padronizados para `Sim/Não`.
 
 ---
 
@@ -123,7 +114,7 @@ Considerando apenas esta base, ela parece permitir análises relacionadas a:
 
 Cada linha representa um resumo de indicadores de movimentação financeira de um associado.
 
-Não foram identificadas múltiplas linhas por `CHAVE` na inspeção inicial, portanto a tabela não aparenta possuir granularidade transacional.
+A tabela possui uma única linha por `CHAVE` e não apresenta granularidade transacional.
 
 #### Campos disponíveis
 
@@ -139,7 +130,12 @@ Não foram identificadas múltiplas linhas por `CHAVE` na inspeção inicial, po
 - Não foram identificados valores nulos.
 - `SALDO_MEDIO`, `PIX_MENSAL` e `COMPRAS_CARTAO` foram interpretados como campos numéricos inteiros.
 - Não existe coluna explícita de competência ou período de referência da movimentação.
-- A análise inicial das distribuições numéricas não apresentou, apenas pelos valores mínimo e máximo, evidência suficiente para classificar registros como inválidos. A investigação de possíveis valores extremos será complementada por análise estatística.
+
+#### Limitação de interpretação
+
+O nome `PIX_MENSAL` sugere uma medida mensal, mas a base não informa sua competência. Da mesma forma, não foi fornecido dicionário adicional especificando formalmente as unidades de `PIX_MENSAL` e `COMPRAS_CARTAO`.
+
+Esses campos foram, portanto, utilizados respeitando a estrutura e os nomes fornecidos, sem criação de premissas adicionais sobre sua origem.
 
 #### Potencial analítico
 
@@ -151,21 +147,13 @@ Considerando apenas esta base, ela parece permitir análises relacionadas a:
 - intensidade de utilização dos serviços financeiros;
 - padrões de relacionamento entre saldo, PIX e compras no cartão.
 
-#### Dúvidas e hipóteses
-
-- O período de referência dos indicadores de movimentação não está explicitamente informado na base.
-- O nome `PIX_MENSAL` sugere uma medida mensal, mas a base não informa a competência correspondente.
-- A unidade de `PIX_MENSAL` deve ser interpretada com cautela, pois o campo pode representar quantidade de transações e não valor financeiro.
-- A unidade de `COMPRAS_CARTAO` também deverá ser considerada na interpretação analítica.
-- As distribuições de `SALDO_MEDIO`, `PIX_MENSAL` e `COMPRAS_CARTAO` deverão ser consideradas antes da definição de critérios de baixa, média ou alta movimentação.
-
 ---
 
 ## 4. Relacionamento entre as bases
 
 ### 4.1 Chave de relacionamento
 
-A coluna `CHAVE` está presente nas três bases e aparenta representar o mesmo associado.
+A coluna `CHAVE` está presente nas três bases e representa o identificador comum do associado.
 
 ### 4.2 Cardinalidade observada
 
@@ -189,15 +177,16 @@ Resultados:
 
 Portanto, não foram identificados registros órfãos entre as bases.
 
-### 4.4 Estrutura esperada após consolidação
+### 4.4 Consolidação
 
-Como as três bases possuem 1.000 registros, `CHAVE` única e cobertura integral entre as populações, espera-se que a consolidação mantenha a granularidade de:
+A base consolidada preserva:
 
 **1 linha = 1 associado**
 
-A base consolidada deverá, portanto, possuir 1.000 registros caso o relacionamento seja realizado corretamente.
+Foram mantidos exatamente **1.000 registros**, sem multiplicação ou perda de associados durante os merges.
 
-Essa quantidade será utilizada como controle de reconciliação após os merges.
+O pipeline utiliza validação `one_to_one` para impedir consolidações incompatíveis com a cardinalidade identificada.
+
 
 ---
 
@@ -207,39 +196,47 @@ Essa quantidade será utilizada como controle de reconciliação após os merges
 
 | Base | Campo | Quantidade | Observação |
 |---|---|---:|---|
-| Associados | `RENDA_MENSAL` | 12 | Valores de renda não informados. |
-| Produtos | — | 0 | Nenhum valor nulo identificado. |
-| Movimentação | — | 0 | Nenhum valor nulo identificado. |
+| Associados | `RENDA_MENSAL` | 12 | Preservados como nulos; faixa derivada recebe `Não informado` |
+| Produtos | — | 0 | Nenhum tratamento necessário |
+| Movimentação | — | 0 | Nenhum tratamento necessário |
 
 ### 5.2 Padronização
 
-| Base | Campo | Observação |
+| Campo | Problema | Tratamento |
 |---|---|---|
-| Associados | `CIDADE` | Foram identificadas diferentes representações para localidades aparentemente equivalentes, incluindo variações de abreviação e caixa. |
+| `CIDADE` | abreviações, caixa e ausência de acentos | nomenclatura canônica |
+| `AGENCIA` | lida como número, apesar de ser código | conversão para texto e dois dígitos |
+| Produtos | `S/N` | saída padronizada para `Sim/Não` |
 
-### 5.3 Tipos de dados
+### 5.3 Consistência temporal
 
-- `AGENCIA` foi interpretada como `int64`, embora semanticamente represente um código categórico.
-- `DATA_ASSOCIACAO` foi corretamente interpretada como `datetime`.
-- `RENDA_MENSAL` foi interpretada como `float64`, o que é compatível com a presença de valores ausentes.
-- Os indicadores de movimentação foram interpretados como numéricos inteiros.
+Foram identificados 37 registros com `DATA_ASSOCIACAO` posterior à data de referência de **31/08/2026**.
+
+Esses registros:
+
+- permanecem na base;
+- mantêm a data original;
+- recebem `FLAG_DATA_FUTURA = Sim`;
+- não recebem tempo de relacionamento válido;
+- não recebem `SCORE_TEMPO`.
 
 ### 5.4 Integridade
 
-- Não foram identificadas linhas completamente duplicadas.
-- Não foram identificadas `CHAVE`s duplicadas.
-- Todas as `CHAVE`s estão presentes nas três bases.
-- Não foram identificados registros órfãos.
-- A cardinalidade observada entre as três bases é `1:1`.
+- linhas completamente duplicadas: 0;
+- chaves duplicadas: 0;
+- registros órfãos: 0;
+- cobertura de chaves: integral;
+- cardinalidade: `1:1`;
+- registros após consolidação: 1.000.
 
 ### 5.5 Consistência lógica
 
-- Foram identificados 37 registros com `DATA_ASSOCIACAO` posterior à data de referência de 01/09/2026.
+- Foram identificados 37 registros com `DATA_ASSOCIACAO` posterior à data de referência de 31/08/2026.
 - Essas datas variam entre 17/09/2026 e 26/12/2026.
 - Esses registros precisam de uma regra de tratamento antes do cálculo de tempo de relacionamento.
 - Foram identificados 13 associados sem nenhum dos seis produtos ativos. Esse comportamento será mantido como válido até que exista evidência para classificá-lo como inconsistência.
 
-### 5.6 Distribuições numéricas iniciais
+### 6 Estatísticas exploratórias iniciais
 
 #### Renda Mensal
 
@@ -247,46 +244,57 @@ Essa quantidade será utilizada como controle de reconciliação após os merges
 - Média: R$ 15.790,71.
 - Mediana: R$ 15.235,00.
 - Mínimo: R$ 2.010,00.
+- Q1: R$ 8.984,75.
+- Q3: R$ 22.911,75.
 - Máximo: R$ 29.972,00.
 
 #### Saldo Médio
 
+- Registros válidos: 1.000.
 - Média: R$ 123.365,02.
 - Mediana: R$ 122.643,50.
 - Mínimo: R$ 744,00.
+- Q1: R$ 61.923,25.
+- Q3: R$ 183.294,75.
 - Máximo: R$ 249.864,00.
 
 #### PIX Mensal
 
+- Registros válidos: 1.000.
 - Média: 50,275.
 - Mediana: 48.
 - Mínimo: 0.
+- Q1: 25.
+- Q3: 76.
 - Máximo: 100.
 
 #### Compras no Cartão
 
+- Registros válidos: 1.000.
 - Média: R$ 10.040,05.
 - Mediana: R$ 9.826,50.
 - Mínimo: R$ 50,00.
+- Q1: R$ 4.990,50.
+- Q3: R$ 15.029,25.
 - Máximo: R$ 19.994,00.
 
-As estatísticas acima representam uma análise exploratória inicial e ainda não definem, isoladamente, limites para classificação de baixa, média ou alta movimentação.
+As estatísticas serviram como apoio à análise exploratória e à definição das regras baseadas em quartis. Valores extremos não foram removidos apenas por sua posição estatística, pois não foi encontrada evidência de que representassem erros de origem.
 
 ---
 
-## 6. Hipóteses e pontos a validar
+## 7. Hipóteses e validações
 
-| ID | Hipótese / dúvida | Como validar | Status |
+| ID | Hipótese / dúvida | Resultado | Status |
 |---|---|---|---|
-| H01 | A `CHAVE` é única nas três bases. | Verificação programática de duplicidades. | Confirmado |
-| H02 | As três bases possuem exatamente o mesmo conjunto de chaves. | Comparação dos conjuntos de `CHAVE`. | Confirmado |
-| H03 | As diferentes grafias de `CIDADE` representam localidades que podem ser padronizadas. |  Análise dos valores únicos e frequências de `CIDADE`. | Parcialmente confirmado - definir padrão |
-| H04 | Existem registros de associação com datas temporalmente inconsistentes. | Comparação de `DATA_ASSOCIACAO` com a data de referência. | Confirmado - 37 registros |
-| H05 | Os produtos utilizam apenas categorias binárias válidas. | Análise dos valores únicos das seis colunas de produto. | Confirmado - apenas 'S' e 'N' |
-| H06 | Associados sem produtos ativos representam uma situação válida. | Verificação conjunta das seis colunas de produto. | Confirmado - 13 registros |
-| H07 | Os indicadores de movimentação não possuem valores extremos relevantes. | Estatísticas descritivas e método IQR. | Em avaliação |
-| H08 | Os valores ausentes de renda não apresentam um padrão evidente. | Investigar os 12 registros e comparar características. | Em avaliação |
-| H09 | A consolidação poderá preservar exatamente um registro por associado. | Executar merges e reconciliar a quantidade final. | Evidência - validar após o merge |
+| H01 | `CHAVE` é única nas três bases | Confirmado programaticamente | Confirmado |
+| H02 | As três bases possuem o mesmo conjunto de chaves | Cobertura integral | Confirmado |
+| H03 | Grafias diferentes de cidade representam categorias equivalentes | Padronização definida e aplicada | Confirmado / Tratado |
+| H04 | Existem datas de associação futuras | 37 registros | Confirmado / Tratado |
+| H05 | Produtos utilizam apenas categorias binárias válidas | Apenas `S` e `N` na fonte | Confirmado |
+| H06 | Existem associados sem produtos ativos | 13 registros, mantidos como válidos | Confirmado |
+| H07 | Valores extremos exigem remoção | Não houve evidência de erro que justificasse exclusão | Não aplicado |
+| H08 | Rendas ausentes exigem imputação | Não houve evidência para atribuir valores artificiais | Não aplicado |
+| H09 | A consolidação preserva um registro por associado | 1.000 entradas e 1.000 saídas | Confirmado |
 
 ---
 
@@ -316,71 +324,130 @@ As estatísticas acima representam uma análise exploratória inicial e ainda n�
 - Como se distribui a utilização do cartão?
 - Existem associados com utilização significativamente maior ou menor que o restante da população?
 
-### 7.2 Perguntas que dependem da consolidação
-
-As perguntas abaixo deverão ser refinadas após a validação e consolidação das bases:
-
-- Existe relação entre renda e quantidade de produtos?
-- Existem associados com alta renda e poucos produtos?
-- O tempo de relacionamento está associado à quantidade ou diversificação de produtos?
-- Associados com maior utilização financeira também possuem maior quantidade de produtos?
-- Existem associados com relacionamento longo, mas baixa utilização dos serviços?
-- Quais perfis apresentam maior potencial de crescimento?
-- Existem diferenças relevantes de perfil entre agências ou cidades?
-- Quais características distinguem associados com maior nível de relacionamento?
-
-> Estas perguntas representam hipóteses analíticas iniciais. A existência de uma relação estatística não deverá ser interpretada automaticamente como causalidade.
-
 ---
 
 ## 8. Decisões de tratamento
 
-O diagnóstico inicial foi concluído, porém as regras de tratamento ainda não foram aplicadas.
-
-Os principais pontos que exigem decisão são:
-
-- padronização de `CIDADE`;
-- tratamento semântico de `AGENCIA`;
-- tratamento dos 12 valores ausentes de `RENDA_MENSAL`;
-- tratamento das 37 datas futuras de `DATA_ASSOCIACAO`;
-- manutenção ou sinalização dos 13 associados sem produtos ativos;
-- definição posterior das regras para indicadores derivados e classificação.
-
-As decisões serão registradas somente após a análise de cada situação e sua respectiva justificativa.
-
-| ID  | Decisão                                                                                                                                                                            | Justificativa                                                                                                                                                                                                                                                                                                                                                                               | Impacto                                                                                                                                                                                                                    |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D01 | Padronizar os valores de `CIDADE`, adotando uma nomenclatura canônica para localidades equivalentes.                                                                               | Foram identificadas diferentes grafias para uma mesma localidade, como abreviações e variações de caixa. A padronização evita que uma única cidade seja contabilizada como categorias distintas nas análises.                                                                                                                                                                               | Reduz categorias duplicadas semanticamente e garante consistência em agrupamentos, filtros e indicadores por cidade, sem alterar a quantidade de associados.                                                               |
-| D02 | Converter `AGENCIA` de tipo numérico para texto e padronizar sua representação como código categórico.                                                                             | Apesar de ter sido interpretada pelo pandas como `int64`, a agência funciona como identificador nominal e não como medida numérica. Operações matemáticas sobre esse campo não possuem significado de negócio.                                                                                                                                                                              | Preserva corretamente o significado do campo e evita agregações numéricas inadequadas. A quantidade de registros e o valor lógico da agência não são alterados.                                                            |
-| D03 | Preservar os 12 valores nulos de `RENDA_MENSAL` e tratar sua ausência explicitamente nas análises derivadas.                                                                       | Os associados possuem outras informações válidas e não devem ser removidos apenas pela ausência de renda. Também não existe evidência suficiente para atribuir artificialmente uma renda por média, mediana ou outra imputação. Indicadores de renda deverão considerar apenas valores conhecidos, enquanto classificações como faixa de renda deverão identificar os casos sem informação. | Mantém os 1.000 associados na base sem introduzir valores de renda artificiais. Métricas de renda utilizarão somente registros válidos, e os casos ausentes poderão ser identificados separadamente como `Não informado`.  |
-| D04 | Preservar a `DATA_ASSOCIACAO` original dos registros com data futura, criar uma sinalização de inconsistência e impedir que esses casos produzam tempo de relacionamento negativo. | Foram identificadas datas posteriores à data de referência da análise. Substituir essas datas por valores arbitrários ou excluir os associados alteraria informações originais sem evidência suficiente. A inconsistência deve permanecer rastreável e ser tratada explicitamente no indicador derivado.                                                                                    | Preserva o dado original e os associados na base, permite identificar os registros inconsistentes e evita que valores negativos contaminem o indicador de tempo de relacionamento e a futura classificação dos associados. |
-
+| ID | Decisão | Justificativa | Impacto |
+|---|---|---|---|
+| D01 | Padronizar `CIDADE` por nomenclatura canônica. | Evita que uma mesma localidade seja contabilizada como categorias diferentes. | Melhora agrupamentos e filtros sem alterar a população. |
+| D02 | Tratar `AGENCIA` como código textual de dois dígitos. | O campo é identificador nominal e não medida numérica. | Evita agregações matemáticas indevidas e preserva o formato de código. |
+| D03 | Preservar os 12 nulos de `RENDA_MENSAL`. | Não há evidência suficiente para imputar renda artificialmente. | Mantém os associados e evita distorção nas métricas de renda. |
+| D04 | Preservar datas futuras e sinalizar a inconsistência. | Excluir ou substituir datas alteraria informação original sem evidência. | Mantém rastreabilidade e impede tempo de relacionamento negativo. |
+| D05 | Utilizar 31/08/2026 como data fixa de referência. | Garante reprodutibilidade do cálculo de relacionamento. | O mesmo código e a mesma base produzem o mesmo resultado em execuções futuras. |
+| D06 | Padronizar produtos e flags para `Sim/Não` na saída. | Facilita leitura e filtros no Power BI. | Melhora a camada de consumo sem alterar a regra lógica. |
+| D07 | Arredondar indicadores de apresentação somente após os cálculos. | A classificação precisa utilizar a precisão completa. | Mantém a precisão da regra e melhora a legibilidade da base entregue. |
 
 ---
 
-## 9. Próximos passos
+## 9. Indicadores derivados
 
-1. Concluir a investigação dos registros com renda ausente.
-2. Validar possíveis valores extremos nos campos numéricos.
-3. Definir e documentar as regras de tratamento dos problemas identificados.
-4. Implementar o processo de limpeza e padronização em Python.
-5. Consolidar as três bases através da `CHAVE`.
-6. Reconciliar a base consolidada com a população original de 1.000 associados.
-7. Criar os indicadores derivados exigidos pelo desafio.
-8. Desenvolver e documentar a metodologia de classificação dos associados.
-9. Preparar a base final para utilização no Power BI.
+Foram criados:
+
+- `QTD_PRODUTOS`
+- `FAIXA_RENDA`
+- `FLAG_DATA_FUTURA`
+- `TEMPO_RELACIONAMENTO_ANOS`
+- `SCORE_PRODUTOS`
+- `SCORE_TEMPO`
+- `SCORE_SALDO`
+- `SCORE_PIX`
+- `SCORE_CARTAO`
+- `SCORE_UTILIZACAO`
+- `SCORE_RELACIONAMENTO`
+- `QTD_DIMENSOES_SCORE`
+- `CLASSIFICACAO`
+- `SEGMENTO_RELACIONAMENTO`
+- `OPORT_CROSS_SELL`
+- `OPORT_BAIXA_UTILIZACAO`
+- `OPORT_RELACIONAMENTO_SUBAPROVEITADO`
+
+As regras completas dos scores e oportunidades estão documentadas em [`metodologia_analitica.md`](metodologia_analitica.md).
 
 ---
 
-## 10. Observações de trabalho
+## 10. Resultado final do tratamento
 
-Este documento deverá ser atualizado durante o desenvolvimento do projeto.
+### Estrutura
 
-A separação utilizada é:
+- registros recebidos em Associados: 1.000;
+- registros recebidos em Produtos: 1.000;
+- registros recebidos em Movimentação: 1.000;
+- registros consolidados: **1.000**;
+- granularidade final: **1 linha por associado**.
 
-- **Fato:** algo observado ou comprovado nos dados.
-- **Hipótese:** algo que parece plausível, mas ainda precisa ser validado.
-- **Pergunta:** algo que ainda precisa ser investigado.
-- **Decisão:** regra adotada após análise e justificativa.
+### Qualidade
 
-Essa distinção deverá ser preservada durante as próximas etapas para evitar que hipóteses sejam tratadas como fatos ou que alterações sejam realizadas sem justificativa.
+- duplicidades de linha: 0;
+- chaves duplicadas: 0;
+- registros órfãos: 0;
+- rendas ausentes preservadas: 12;
+- datas futuras sinalizadas: 37;
+- associados sem produtos ativos preservados: 13.
+
+### Padronizações
+
+As categorias originais de cidade:
+
+- `P. Branco`
+- `Pato Branco`
+- `PATO BRANCO`
+
+foram consolidadas em:
+
+- `Pato Branco`
+
+Também foram corrigidos:
+
+- `Chapeco` → `Chapecó`
+- `Maringa` → `Maringá`
+
+Após a padronização, a base possui cinco localidades:
+
+- Cascavel;
+- Chapecó;
+- Maringá;
+- Pato Branco;
+- Toledo.
+
+### Saída
+
+A versão final é exportada para:
+
+```text
+data/processed/base_consolidada.xlsx
+```
+
+A base é preparada para consumo no Power BI com:
+
+- datas sem componente de horário na apresentação;
+- valores monetários preservados como numéricos;
+- categorias de produtos e flags em `Sim/Não`;
+- score e tempo de relacionamento com precisão de apresentação controlada;
+- colunas organizadas por contexto analítico.
+
+---
+
+## 11. Perguntas analíticas para o dashboard
+
+A base consolidada permite explorar, entre outras, as seguintes perguntas:
+
+- Como a carteira está distribuída por agência e cidade?
+- Qual é o perfil de renda dos associados?
+- Qual é o tempo médio de relacionamento?
+- Quantos produtos os associados possuem em média?
+- Qual é a distribuição dos níveis de relacionamento?
+- Quais associados possuem alta renda e poucos produtos?
+- Onde existe baixa utilização dos serviços financeiros?
+- Quais associados possuem relacionamento longo, mas baixa diversificação de produtos?
+- Como os perfis e oportunidades variam por agência, cidade e faixa de renda?
+
+---
+
+## 12. Observações e limitações
+
+- A base de movimentação não contém competência explícita.
+- Não foi fornecido dicionário adicional com as unidades formais de `PIX_MENSAL` e `COMPRAS_CARTAO`.
+- Os dados são fictícios e destinados ao desafio técnico.
+- O score utiliza quartis da população analisada e não deve ser generalizado automaticamente para outra base.
+- As relações identificadas são descritivas e não representam causalidade.
