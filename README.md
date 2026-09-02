@@ -190,7 +190,7 @@ O dashboard foi desenvolvido no Power BI Desktop a partir da base consolidada ge
 
 O arquivo está disponível em:
 
-`dashboard/dashboard_associados.pbix`
+`dashboard/Dashboard.pbix`
 
 A solução foi organizada em quatro páginas:
 
