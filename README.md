@@ -2,7 +2,7 @@
 
 Projeto desenvolvido como parte de um desafio técnico para a vaga de Assistente de BI.
 
-A solução consolida dados cadastrais, produtos e movimentação financeira de associados, realiza tratamento e validação de qualidade em Python, cria indicadores de relacionamento, uma metodologia própria de segmentação e critérios de oportunidades comerciais. A camada analítica será apresentada em um dashboard executivo no Power BI.
+A solução consolida dados cadastrais, produtos e movimentação financeira de associados, realiza tratamento e validação de qualidade em Python, cria indicadores de relacionamento, uma metodologia própria de segmentação e critérios de oportunidades comerciais. A camada analítica é apresentada em um dashboard executivo desenvolvido no Power BI.
 
 ## Status do projeto
 
@@ -14,7 +14,7 @@ A solução consolida dados cadastrais, produtos e movimentação financeira de 
 - [x] Segmentação dos associados
 - [x] Identificação de oportunidades
 - [x] Geração da base consolidada
-- [ ] Dashboard Power BI
+- [x] Dashboard Power BI
 
 ## Objetivo
 
@@ -49,6 +49,7 @@ teste-bi-associados/
 │   └── tratamento_final.py
 │
 ├── dashboard/
+│   └── dashboard_associados.pbix
 │
 ├── .gitignore
 ├── README.md
@@ -185,14 +186,21 @@ Um mesmo associado pode atender a mais de uma oportunidade.
 
 ## Dashboard
 
-O dashboard será construído com quatro páginas executivas:
+O dashboard foi desenvolvido no Power BI Desktop a partir da base consolidada gerada pelo pipeline Python.
 
-1. **Visão Geral** — visão consolidada da carteira.
-2. **Relacionamento** — distribuição por agência, cidade, renda e tempo de relacionamento.
-3. **Segmentação** — participação quantitativa e percentual dos níveis de relacionamento.
-4. **Oportunidades** — grupos prioritários para aprofundamento do relacionamento.
+O arquivo está disponível em:
 
-O arquivo `.pbix` será disponibilizado na pasta `dashboard/` após a conclusão da camada visual.
+`dashboard/dashboard_associados.pbix`
+
+A solução foi organizada em quatro páginas:
+
+1. **Visão Geral** — principais indicadores executivos da carteira, distribuição por renda e segmento de relacionamento.
+2. **Relacionamento** — análise da carteira por cidade, agência, faixa de renda e tempo de relacionamento.
+3. **Classificação** — distribuição quantitativa e percentual dos segmentos e análise dos pilares que compõem o score de relacionamento.
+4. **Oportunidades** — identificação de associados com potencial de cross-sell, baixa utilização e relacionamento subaproveitado, incluindo análise por agência e lista de associados prioritários.
+
+Os principais indicadores do dashboard são calculados dinamicamente no Power BI e respondem aos filtros disponíveis em cada página.
+
 
 ## Como executar o projeto: 
 
